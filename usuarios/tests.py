@@ -41,3 +41,13 @@ class CadastroLoginTests(TestCase):
             "password": SENHA,
         })
         self.assertRedirects(resposta, reverse("home"))
+
+    def test_login_com_email_em_maiusculas(self):
+        Usuario.objects.create_user(
+            email="ana@exemplo.com", password=SENHA, nome_completo="Ana"
+        )
+        resposta = self.client.post(reverse("usuarios:login"), {
+            "username": "ANA@Exemplo.com",
+            "password": SENHA,
+        })
+        self.assertRedirects(resposta, reverse("home"))
