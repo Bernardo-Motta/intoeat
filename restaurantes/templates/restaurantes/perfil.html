@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-br">
+<head><meta charset="utf-8"><title>{{ restaurante.nome }}</title></head>
+<body><main>
+  <a href="{% url 'restaurantes:lista' %}">Voltar</a>
+  <h1>{{ restaurante.nome }}</h1>
+  <p>{{ restaurante.descricao }}</p>
+  <p>{{ restaurante.endereco }} — {{ restaurante.cidade }}</p>
+  <p>Nota média: {{ resumo.media|floatformat:1|default:"Sem avaliações" }}
+     ({{ resumo.total }} avaliações mais recentes de usuários distintos)</p>
+  <a href="{% url 'avaliacoes:criar' restaurante.pk %}">Avaliar este restaurante</a>
+  {% if user.is_authenticated %}<a href="{% url 'avaliacoes:minhas' %}">Minhas avaliações</a>{% endif %}
+  <h2>Avaliações recentes por usuário</h2>
+  {% for avaliacao in avaliacoes %}
+    <article>
+      <strong>{{ avaliacao.nota }}/5</strong> — {{ avaliacao.usuario }}
+      <time>{{ avaliacao.data|date:"d/m/Y H:i" }}</time>
+      <p>{{ avaliacao.comentario }}</p>
+    </article>
+  {% empty %}<p>Seja a primeira pessoa a avaliar.</p>{% endfor %}
+</main></body></html>

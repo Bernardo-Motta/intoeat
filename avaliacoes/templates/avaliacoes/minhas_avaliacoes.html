@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-br">
+<head><meta charset="utf-8"><title>Minhas avaliações — IntoEat</title></head>
+<body>
+<main>
+  <h1>Minhas avaliações</h1>
+  <p>Seu histórico completo, incluindo avaliações anteriores do mesmo restaurante.</p>
+  <a href="{% url 'restaurantes:lista' %}">Ver restaurantes</a>
+  {% for avaliacao in avaliacoes %}
+    <article>
+      <h2><a href="{% url 'restaurantes:perfil' avaliacao.restaurante_id %}">{{ avaliacao.restaurante.nome }}</a></h2>
+      <p><strong>{{ avaliacao.nota }}/5</strong> — {{ avaliacao.data|date:"d/m/Y H:i" }}</p>
+      <p>{{ avaliacao.comentario }}</p>
+    </article>
+  {% empty %}
+    <p>Você ainda não fez nenhuma avaliação.</p>
+  {% endfor %}
+</main>
+</body>
+</html>
