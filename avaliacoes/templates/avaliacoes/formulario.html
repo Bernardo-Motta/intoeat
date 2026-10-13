@@ -1,0 +1,47 @@
+{% extends 'intoeat/base.html' %}
+{% block title %}Avaliar {{ restaurante.nome }} — IntoEat{% endblock %}
+{% block content %}
+  <a class="back-link" href="{% url 'restaurantes:perfil' restaurante.pk %}"><span aria-hidden="true">←</span> Voltar ao restaurante</a>
+  <section class="panel form-panel" aria-labelledby="form-title">
+    <div class="form-intro">
+      <span class="form-eyebrow">Compartilhe sua experiência</span>
+      <h1 id="form-title">Avaliar {{ restaurante.nome }}</h1>
+      <p>A nota é obrigatória. Comentário e características são opcionais.</p>
+    </div>
+    <form method="post" class="review-form" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      <fieldset class="form-group">
+        <legend>Sua nota <span class="required-indicator">*</span></legend>
+        <p class="field-hint">Escolha de 0 a 5 estrelas.</p>
+        <div class="rating-choices">
+          {% for escolha in form.nota %}
+            <label class="rating-choice">{{ escolha.tag }}<span>{{ escolha.choice_label }}</span></label>
+          {% endfor %}
+        </div>
+        {% if form.nota.errors %}<div class="field-error" role="alert">{{ form.nota.errors }}</div>{% endif %}
+      </fieldset>
+
+      <div class="form-group">
+        <label class="field-label" for="{{ form.comentario.id_for_label }}">Comentário <span class="optional-note">(opcional)</span></label>
+        {{ form.comentario }}
+        {% if form.comentario.errors %}<div class="field-error" role="alert">{{ form.comentario.errors }}</div>{% endif %}
+      </div>
+
+      <fieldset class="form-group">
+        <legend>Características da sua experiência <span class="optional-note">(opcional)</span></legend>
+        <p class="field-hint">Selecione quantas tags quiser — ou nenhuma.</p>
+        <div class="tag-options">
+          {% for escolha in form.caracteristicas %}
+            <label class="tag-option">{{ escolha.tag }}<span>{{ escolha.choice_label }}</span></label>
+          {% empty %}<p class="muted">Ainda não existem tags cadastradas.</p>{% endfor %}
+        </div>
+        {% if form.caracteristicas.errors %}<div class="field-error" role="alert">{{ form.caracteristicas.errors }}</div>{% endif %}
+      </fieldset>
+      <div class="form-actions">
+        <a class="secondary-button" href="{% url 'restaurantes:perfil' restaurante.pk %}">Cancelar</a>
+        <button class="primary-button" type="submit">Enviar avaliação <span aria-hidden="true">→</span></button>
+      </div>
+    </form>
+  </section>
+{% endblock %}
