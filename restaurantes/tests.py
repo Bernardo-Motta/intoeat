@@ -17,21 +17,23 @@ class RestauranteTests(TestCase):
                 validar_cnpj(cnpj)
 
     def test_fluxo_solicitar_aprovar_e_listar(self):
-        restaurante = solicitar_restaurante(usuario=self.usuario, nome="Café", categoria="Café", endereco="Rua A", cidade="SP", cnpj="11222333000181")
+        restaurante = solicitar_restaurante(usuario=self.usuario, nome="Café", tipo_cozinha="Café", endereco="Rua A", cidade="SP", cnpj="11222333000181")
         self.assertEqual(restaurante.status, Restaurante.Status.PENDENTE)
+        self.assertEqual(restaurante.criado_por, self.usuario)
+        self.assertEqual(restaurante.tipo_cozinha, "Café")
         self.assertNotContains(self.client.get(reverse("restaurantes:lista")), "Café")
         aprovar_restaurante(restaurante)
         self.assertContains(self.client.get(reverse("restaurantes:lista")), "Café")
         self.assertEqual(Restaurante.objects.aprovados().count(), 1)
 
     def test_cnpj_duplicado_ativo(self):
-        kwargs = dict(usuario=self.usuario, nome="Café", categoria="Café", endereco="Rua A", cidade="SP", cnpj="11222333000181")
+        kwargs = dict(usuario=self.usuario, nome="Café", tipo_cozinha="Café", endereco="Rua A", cidade="SP", cnpj="11222333000181")
         solicitar_restaurante(**kwargs)
         with self.assertRaises(ValidationError):
             solicitar_restaurante(**kwargs)
 
     def test_rejeitado_pode_ser_solicitado_novamente(self):
-        kwargs = dict(usuario=self.usuario, nome="Café", categoria="Café", endereco="Rua A", cidade="SP", cnpj="11222333000181")
+        kwargs = dict(usuario=self.usuario, nome="Café", tipo_cozinha="Café", endereco="Rua A", cidade="SP", cnpj="11222333000181")
         restaurante = solicitar_restaurante(**kwargs)
         rejeitar_restaurante(restaurante, "Dados incompletos")
         self.assertEqual(solicitar_restaurante(**kwargs).status, Restaurante.Status.PENDENTE)

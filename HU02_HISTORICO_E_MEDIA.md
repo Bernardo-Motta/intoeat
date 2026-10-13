@@ -1,22 +1,18 @@
 # HU02 — Histórico de avaliações e média por usuário
 
-## Regra
-- Um usuário pode avaliar o mesmo restaurante diversas vezes. Cada registro é preservado.
-- `GET /minhas-avaliacoes/` exibe o histórico integral do usuário autenticado.
-- A página do restaurante exibe somente a avaliação mais recente de cada usuário para aquele restaurante.
-- A média e a contagem usam apenas essas avaliações mais recentes, com uma contribuição por usuário.
-- Empates de data são resolvidos pelo maior ID.
-- A função `avaliacoes.services.avaliacoes_mais_recentes()` centraliza o filtro e retorna QuerySet, permitindo agregações no banco.
-- Não é necessária migração: o esquema anterior já permite múltiplas avaliações por usuário e restaurante.
+- Um usuário pode avaliar o mesmo restaurante várias vezes; cada avaliação continua armazenada.
+- `GET /minhas-avaliacoes/`: histórico completo do usuário autenticado, com notas, comentários quando existirem e tags.
+- O perfil do restaurante exibe apenas a avaliação mais recente de cada usuário, com as tags daquela avaliação.
+- Média e contagem consideram somente essas avaliações mais recentes; desempate por maior ID.
+- `avaliacoes.services.avaliacoes_mais_recentes()` centraliza a regra.
+- Nota de 0 a 5 é obrigatória; comentário e tags são opcionais. Várias tags podem ser selecionadas.
+- Migração de comentário opcional: `avaliacoes/0002_comentario_opcional.py`.
 
-## Comandos
 ```bash
 python manage.py check
 python manage.py makemigrations --check --dry-run
+python manage.py migrate
 python manage.py test avaliacoes restaurantes
 ```
 
-## Atenção
-- `restaurantes/views.py` e o template do perfil foram modificados; integrar cuidadosamente se a HU05 estiver sendo desenvolvida em paralelo.
-- Outras páginas e serviços que calcularem médias devem utilizar `avaliacoes_mais_recentes()` para preservar a regra.
-- A rota `/minhas-avaliacoes/` é o histórico do usuário logado, sem exposição de dados de outros usuários.
+**Integração:** a implementação da HU05 e da busca deve reutilizar a função de avaliações mais recentes para não considerar múltiplas notas de uma mesma pessoa.

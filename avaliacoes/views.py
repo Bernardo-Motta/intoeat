@@ -31,6 +31,11 @@ def minhas_avaliacoes(request):
     avaliacoes = (
         request.user.avaliacoes
         .select_related("restaurante")
+        .prefetch_related("caracteristicas")
         .order_by("-data", "-pk")
     )
-    return render(request, "avaliacoes/minhas_avaliacoes.html", {"avaliacoes": avaliacoes})
+    return render(request, "avaliacoes/minhas_avaliacoes.html", {
+        "avaliacoes": avaliacoes,
+        "identificador": request.user.email.partition("@")[0],
+        "estrelas": range(1, 6),
+    })

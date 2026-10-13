@@ -1,20 +1,54 @@
-<!doctype html>
-<html lang="pt-br">
-<head><meta charset="utf-8"><title>Minhas avaliações — IntoEat</title></head>
-<body>
-<main>
-  <h1>Minhas avaliações</h1>
-  <p>Seu histórico completo, incluindo avaliações anteriores do mesmo restaurante.</p>
-  <a href="{% url 'restaurantes:lista' %}">Ver restaurantes</a>
-  {% for avaliacao in avaliacoes %}
-    <article>
-      <h2><a href="{% url 'restaurantes:perfil' avaliacao.restaurante_id %}">{{ avaliacao.restaurante.nome }}</a></h2>
-      <p><strong>{{ avaliacao.nota }}/5</strong> — {{ avaliacao.data|date:"d/m/Y H:i" }}</p>
-      <p>{{ avaliacao.comentario }}</p>
-    </article>
-  {% empty %}
-    <p>Você ainda não fez nenhuma avaliação.</p>
-  {% endfor %}
-</main>
-</body>
-</html>
+{% extends 'intoeat/base.html' %}
+{% block title %}Meu perfil e avaliações — IntoEat{% endblock %}
+{% block nav_profile_attr %}aria-current="page"{% endblock %}
+{% block content %}
+  <section class="profile-hero" aria-labelledby="my-profile-title">
+    <div class="avatar-placeholder" role="img" aria-label="Foto de perfil ainda não cadastrada">Foto de Perfil</div>
+    <div class="profile-main-info">
+      <h1 id="my-profile-title">{{ user.nome_completo|default:user.email }}</h1>
+      <p>@{{ identificador }}</p>
+    </div>
+    <p class="member-since">Desde {{ user.date_joined|date:'Y' }}</p>
+  </section>
+
+  <section class="panel profile-details" aria-label="Informações do perfil">
+    <h2>Bio:</h2>
+    <p class="muted">Biografia ainda não informada.</p>
+    <h2>Interesses:</h2>
+    <p class="muted">Os interesses do perfil serão exibidos quando a funcionalidade estiver disponível.</p>
+    <h2>Informações Pessoais:</h2>
+    <p>Nome Completo: {{ user.nome_completo|default:'Não informado' }}</p>
+    <p>E-mail: {{ user.email }}</p>
+    <p>Data de cadastro: {{ user.date_joined|date:'d/m/Y' }}</p>
+  </section>
+
+  <section class="panel visited-panel" aria-labelledby="visitados-title">
+    <div class="tabs-row" role="navigation" aria-label="Seções do perfil">
+      <span class="tab active" aria-current="page" id="visitados-title">Restaurantes Visitados</span>
+      <a class="tab" href="{% url 'restaurantes:meus' %}">Meus Restaurantes</a>
+      <a class="tab tab-action" href="{% url 'restaurantes:cadastrar' %}">Cadastrar Restaurante</a>
+    </div>
+    <p class="history-caption">Seu histórico completo: avaliações antigas também aparecem aqui.</p>
+    <div class="history-list">
+      {% for avaliacao in avaliacoes %}
+        <article class="history-item">
+          <div class="history-thumb" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.5"/><path d="M14 11v16m5-16v16m-10-16v16m5 0v10m18-26v26m0-26c6 3 8 10 0 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="history-info">
+            <h3><a href="{% url 'restaurantes:perfil' avaliacao.restaurante_id %}">{{ avaliacao.restaurante.nome }}</a></h3>
+            <div class="stars stars-small" aria-label="Nota {{ avaliacao.nota }} de 5">
+              {% for estrela in estrelas %}<span class="{% if estrela <= avaliacao.nota %}filled{% endif %}" aria-hidden="true">{% if estrela <= avaliacao.nota %}★{% else %}☆{% endif %}</span>{% endfor %}
+            </div>
+            <p class="history-date">{{ avaliacao.data|date:'d/m/Y H:i' }}</p>
+            <p><strong>Características:</strong> {% for tag in avaliacao.caracteristicas.all %}{{ tag.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhuma selecionada{% endfor %}</p>
+            {% if avaliacao.comentario %}<p class="history-comment">“{{ avaliacao.comentario }}”</p>{% else %}<p class="history-comment muted">Avaliação sem comentário.</p>{% endif %}
+          </div>
+          <a class="history-link" href="{% url 'restaurantes:perfil' avaliacao.restaurante_id %}">Ver restaurante <span aria-hidden="true">→</span></a>
+        </article>
+      {% empty %}
+        <div class="empty-state"><h3>Nenhum restaurante avaliado</h3><p>Quando você avaliar um restaurante, seu histórico aparecerá aqui.</p><a class="primary-button" href="{% url 'restaurantes:lista' %}">Explorar restaurantes</a></div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

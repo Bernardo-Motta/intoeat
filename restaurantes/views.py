@@ -1,3 +1,4 @@
+from collections import Counter
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db.models import Avg, Count
@@ -15,9 +16,20 @@ def lista_restaurantes(request):
 
 def perfil_restaurante(request, restaurante_id):
     restaurante = get_object_or_404(Restaurante.objects.aprovados(), pk=restaurante_id)
-    avaliacoes = avaliacoes_mais_recentes(restaurante).select_related("usuario").order_by("-data", "-pk")
-    resumo = avaliacoes.aggregate(media=Avg("nota"), total=Count("id"))
-    return render(request, "restaurantes/perfil.html", {"restaurante": restaurante, "avaliacoes": avaliacoes, "resumo": resumo})
+    avaliacoes_qs = avaliacoes_mais_recentes(restaurante).select_related("usuario").prefetch_related("caracteristicas", "ocasioes").order_by("-data", "-pk")
+    resumo = avaliacoes_qs.aggregate(media=Avg("nota"), total=Count("id"))
+    avaliacoes = list(avaliacoes_qs)
+    # O perfil coletivo considera apenas a avaliação mais recente de cada pessoa.
+    caracteristicas = Counter(tag.nome for avaliacao in avaliacoes for tag in avaliacao.caracteristicas.all())
+    ocasioes = Counter(ocasiao.nome for avaliacao in avaliacoes for ocasiao in avaliacao.ocasioes.all())
+    return render(request, "restaurantes/perfil.html", {
+        "restaurante": restaurante,
+        "avaliacoes": avaliacoes,
+        "resumo": resumo,
+        "caracteristicas_destaque": [dict(nome=nome, total=total) for nome, total in caracteristicas.most_common(3)],
+        "ocasioes_destaque": [dict(nome=nome, total=total) for nome, total in ocasioes.most_common(3)],
+        "estrelas": range(1, 6),
+    })
 
 
 @login_required
@@ -35,5 +47,5 @@ def cadastrar_restaurante(request):
 
 @login_required
 def meus_restaurantes(request):
-    restaurantes = Restaurante.objects.filter(solicitante=request.user).order_by("nome")
+    restaurantes = Restaurante.objects.filter(criado_por=request.user).order_by("nome")
     return render(request, "restaurantes/meus.html", {"restaurantes": restaurantes})
