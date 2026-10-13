@@ -7,7 +7,7 @@ class Avaliacao(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="avaliacoes")
     restaurante = models.ForeignKey("restaurantes.Restaurante", on_delete=models.CASCADE, related_name="avaliacoes")
     nota = models.PositiveSmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
-    comentario = models.TextField()
+    comentario = models.TextField(blank=True)
     data = models.DateTimeField(auto_now_add=True)
     ocasioes = models.ManyToManyField("restaurantes.Ocasiao", blank=True, related_name="avaliacoes")
     caracteristicas = models.ManyToManyField("restaurantes.Caracteristica", blank=True, related_name="avaliacoes")

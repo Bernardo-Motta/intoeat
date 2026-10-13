@@ -18,14 +18,14 @@ def validar_cnpj(valor):
     return digitos
 
 
-def solicitar_restaurante(*, usuario, nome, categoria, endereco, cidade, cnpj, descricao=""):
+def solicitar_restaurante(*, usuario, nome, tipo_cozinha, endereco, cidade, cnpj, descricao=""):
     if not usuario.is_authenticated:
         raise ValidationError("É necessário fazer login.")
     cnpj = validar_cnpj(cnpj)
     if Restaurante.objects.filter(cnpj=cnpj, status__in=[Restaurante.Status.PENDENTE, Restaurante.Status.APROVADO]).exists():
         raise ValidationError("Já existe uma solicitação ativa para este CNPJ.")
-    restaurante = Restaurante(nome=nome, categoria=categoria, endereco=endereco, cidade=cidade, cnpj=cnpj,
-                             descricao=descricao, solicitante=usuario)
+    restaurante = Restaurante(nome=nome, tipo_cozinha=tipo_cozinha, endereco=endereco, cidade=cidade, cnpj=cnpj,
+                             descricao=descricao, criado_por=usuario)
     restaurante.full_clean()
     restaurante.save()
     return restaurante

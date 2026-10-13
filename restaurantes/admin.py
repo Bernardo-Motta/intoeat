@@ -8,7 +8,7 @@ admin.site.register(Caracteristica)
 
 @admin.register(Restaurante)
 class RestauranteAdmin(admin.ModelAdmin):
-    list_display = ("nome", "cnpj", "status", "solicitante")
+    list_display = ("nome", "cnpj", "status", "criado_por")
     list_filter = ("status",)
     search_fields = ("nome", "cnpj")
     readonly_fields = ("status", "motivo_rejeicao")

@@ -1,72 +1,37 @@
 [
-{
-  "model": "restaurantes.ocasiao",
-  "pk": 1,
-  "fields": {
-    "nome": "Encontro"
+  {
+    "model": "restaurantes.ocasiao",
+    "pk": 1,
+    "fields": {
+      "nome": "Encontro"
+    }
+  },
+  {
+    "model": "restaurantes.ocasiao",
+    "pk": 2,
+    "fields": {
+      "nome": "Família"
+    }
+  },
+  {
+    "model": "restaurantes.ocasiao",
+    "pk": 3,
+    "fields": {
+      "nome": "Aniversário"
+    }
+  },
+  {
+    "model": "restaurantes.ocasiao",
+    "pk": 4,
+    "fields": {
+      "nome": "Reunião de trabalho"
+    }
+  },
+  {
+    "model": "restaurantes.ocasiao",
+    "pk": 5,
+    "fields": {
+      "nome": "Amigos"
+    }
   }
-},
-{
-  "model": "restaurantes.ocasiao",
-  "pk": 2,
-  "fields": {
-    "nome": "Família"
-  }
-},
-{
-  "model": "restaurantes.ocasiao",
-  "pk": 3,
-  "fields": {
-    "nome": "Aniversário"
-  }
-},
-{
-  "model": "restaurantes.ocasiao",
-  "pk": 4,
-  "fields": {
-    "nome": "Reunião de trabalho"
-  }
-},
-{
-  "model": "restaurantes.ocasiao",
-  "pk": 5,
-  "fields": {
-    "nome": "Amigos"
-  }
-},
-{
-  "model": "restaurantes.caracteristica",
-  "pk": 1,
-  "fields": {
-    "nome": "Ambiente calmo"
-  }
-},
-{
-  "model": "restaurantes.caracteristica",
-  "pk": 2,
-  "fields": {
-    "nome": "Estacionamento"
-  }
-},
-{
-  "model": "restaurantes.caracteristica",
-  "pk": 3,
-  "fields": {
-    "nome": "Pet friendly"
-  }
-},
-{
-  "model": "restaurantes.caracteristica",
-  "pk": 4,
-  "fields": {
-    "nome": "Opção vegetariana"
-  }
-},
-{
-  "model": "restaurantes.caracteristica",
-  "pk": 5,
-  "fields": {
-    "nome": "Acessível"
-  }
-}
 ]
