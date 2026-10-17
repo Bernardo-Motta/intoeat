@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meu perfil - InToEat</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f5f5f5; margin: 0; padding: 2rem 1rem; color: #222; }
+        .perfil { max-width: 520px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+        .cabecalho { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
+        .foto { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .foto-padrao { display: flex; align-items: center; justify-content: center; background: #d9d9d9; color: #555; font-size: 2.5rem; font-weight: 600; }
+        h1 { margin: 0; font-size: 1.5rem; }
+        .login { margin: .25rem 0 0; color: #666; }
+        h2 { font-size: 1rem; margin: 0 0 .5rem; }
+        .vazio { color: #888; font-style: italic; }
+        .acoes { display: flex; gap: .75rem; margin-top: 2rem; flex-wrap: wrap; }
+        .botao { padding: .6rem 1rem; border-radius: 8px; border: 1px solid #333; color: #222; text-decoration: none; }
+        .botao:hover { background: #eee; }
+    </style>
+</head>
+<body>
+    <main class="perfil">
+        <div class="cabecalho">
+            {% if usuario.foto %}
+                <img class="foto" src="{{ usuario.foto.url }}" alt="Foto de {{ usuario.nome_completo }}">
+            {% else %}
+                <div class="foto foto-padrao" aria-hidden="true">{{ usuario.nome_completo|slice:":1"|upper }}</div>
+            {% endif %}
+            <div>
+                <h1>{{ usuario.nome_completo }}</h1>
+                <p class="login">{{ usuario.email }}</p>
+            </div>
+        </div>
+
+        <section>
+            <h2>Biografia</h2>
+            {% if usuario.biografia %}
+                {{ usuario.biografia|linebreaks }}
+            {% else %}
+                <p class="vazio">Você ainda não escreveu uma biografia.</p>
+            {% endif %}
+        </section>
+
+        <nav class="acoes">
+            {# TODO subtask 2: trocar "#" por {% url 'usuarios:editar_perfil' %} #}
+            <a class="botao" href="#">Editar perfil</a>
+            {# TODO subtask 3: trocar "#" por {% url 'usuarios:minhas_avaliacoes' %} #}
+            <a class="botao" href="#">Minhas avaliações</a>
+        </nav>
+    </main>
+</body>
+</html>

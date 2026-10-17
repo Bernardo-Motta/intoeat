@@ -123,6 +123,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Arquivos enviados pelos usuarios (fotos de perfil)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
@@ -134,3 +138,7 @@ MAILERS = {
 }
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
+
+# Para onde @login_required manda quem nao esta logado.
+# Trocar quando o grupo tiver uma tela de login propria.
+LOGIN_URL = 'admin:login'
