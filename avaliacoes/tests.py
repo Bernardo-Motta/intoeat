@@ -205,8 +205,17 @@ class FrontendWireframeTests(TestCase):
         self.tranquilo = Caracteristica.objects.get(nome="Tranquilo")
         self.ocasiao = Ocasiao.objects.create(nome="Data especial")
 
-    def test_pagina_inicial_redireciona_para_restaurantes(self):
-        self.assertRedirects(self.client.get("/"), reverse("restaurantes:lista"))
+    
+    def test_pagina_inicial_renderiza_home(self):
+        # Faz uma requisição à página inicial
+        response = self.client.get("/")
+
+        # Verifica se a página foi carregada com sucesso
+        self.assertEqual(response.status_code, 200)
+
+        # Verifica se o template home.html foi utilizado
+        self.assertTemplateUsed(response, "home.html")
+
 
     def test_formulario_tema_e_opcoes(self):
         self.client.force_login(self.usuario)
