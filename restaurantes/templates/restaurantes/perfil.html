@@ -1,0 +1,71 @@
+{% extends 'intoeat/base.html' %}
+{% block title %}{{ restaurante.nome }} — IntoEat{% endblock %}
+{% block content %}
+  <a class="back-link" href="{% url 'restaurantes:lista' %}"><span aria-hidden="true">←</span> Voltar</a>
+
+  {# O modelo Restaurante ainda não possui fotos: mantemos os espaços do carrossel como no wireframe. #}
+  <section class="photo-strip" aria-label="Área reservada às fotos do restaurante">
+    <div class="photo-placeholder photo-cover"><span>Fotos do Restaurante<br><small>(Carrossel)</small></span></div>
+    <div class="photo-placeholder" aria-hidden="true"></div>
+    <div class="photo-placeholder" aria-hidden="true"></div>
+    <div class="photo-placeholder" aria-hidden="true"></div>
+    <div class="photo-placeholder" aria-hidden="true"></div>
+    <div class="photo-placeholder" aria-hidden="true"></div>
+    <div class="photo-placeholder" aria-hidden="true"></div>
+    <div class="photo-placeholder" aria-hidden="true"></div>
+  </section>
+
+  <section class="panel restaurant-identity" aria-labelledby="restaurant-name">
+    <div class="restaurant-title-row">
+      <h1 id="restaurant-name">{{ restaurante.nome }}</h1>
+      <div class="restaurant-rating" aria-label="Nota média {% if resumo.media is not None %}{{ resumo.media|floatformat:1 }} de 5{% else %}ainda não disponível{% endif %}">
+        <div class="stars stars-large" aria-hidden="true">
+          {% for estrela in estrelas %}<span class="{% if resumo.media is not None and estrela <= resumo.media %}filled{% endif %}">{% if resumo.media is not None and estrela <= resumo.media %}★{% else %}☆{% endif %}</span>{% endfor %}
+        </div>
+        <small>{% if resumo.media is not None %}{{ resumo.media|floatformat:1 }}/5 · {{ resumo.total }} {% if resumo.total == 1 %}avaliação{% else %}avaliações{% endif %}{% else %}Sem avaliações{% endif %}</small>
+      </div>
+    </div>
+    <strong class="identity-subtitle">{{ restaurante.tipo_cozinha }}</strong>
+    <p class="identity-address">{{ restaurante.endereco }}{% if restaurante.cidade %}, {{ restaurante.cidade }}{% endif %}</p>
+  </section>
+
+  <section class="panel about-panel" aria-labelledby="sobre-restaurante">
+    <h2 id="sobre-restaurante">Sobre Nós</h2>
+    <p class="description-text">{% if restaurante.descricao %}{{ restaurante.descricao|linebreaksbr }}{% else %}Este restaurante ainda não adicionou uma descrição.{% endif %}</p>
+    <p class="summary-row"><strong>Características:</strong>
+      {% for item in caracteristicas_destaque %}{{ item.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhuma característica informada{% endfor %}
+    </p>
+    <p class="summary-row"><strong>Ocasiões:</strong>
+      {% for item in ocasioes_destaque %}{{ item.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhuma ocasião informada{% endfor %}
+    </p>
+  </section>
+
+  <div class="section-heading">
+    <div><h2>Avaliações</h2><p>Exibindo a avaliação mais recente de cada pessoa.</p></div>
+    <a class="primary-button" href="{% url 'avaliacoes:criar' restaurante.pk %}">★ Avaliar restaurante</a>
+  </div>
+  <section class="reviews-grid" aria-label="Avaliações recentes por usuário">
+    {% for avaliacao in avaliacoes %}
+      <article class="panel review-card">
+        <div class="review-card-heading">
+          <h3>{{ avaliacao.usuario.nome_completo|default:avaliacao.usuario.email }}</h3>
+          <div class="stars stars-small" aria-label="Nota {{ avaliacao.nota }} de 5">
+            {% for estrela in estrelas %}<span class="{% if estrela <= avaliacao.nota %}filled{% endif %}" aria-hidden="true">{% if estrela <= avaliacao.nota %}★{% else %}☆{% endif %}</span>{% endfor %}
+          </div>
+        </div>
+        <time class="date-note" datetime="{{ avaliacao.data|date:'c' }}">{{ avaliacao.data|date:'d/m/Y' }}</time>
+        {% if avaliacao.comentario %}<p class="review-comment">{{ avaliacao.comentario }}</p>{% else %}<p class="review-comment muted">Avaliação sem comentário.</p>{% endif %}
+        <div class="review-footer">
+          <div class="review-tag-list"><strong>Características:</strong>
+            {% for tag in avaliacao.caracteristicas.all %}{{ tag.nome }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhuma tag informada{% endfor %}
+          </div>
+          {% if avaliacao.comentario|length > 125 %}
+          <details class="review-more"><summary>Ver Mais +</summary><p>{{ avaliacao.comentario }}</p></details>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <div class="panel empty-state"><h3>Nenhuma avaliação por enquanto</h3><p>Compartilhe sua experiência e ajude outras pessoas a conhecer este restaurante.</p></div>
+    {% endfor %}
+  </section>
+{% endblock %}
