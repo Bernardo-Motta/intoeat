@@ -33,6 +33,8 @@ class Usuario(AbstractUser):
     last_name = None
     nome_completo = models.CharField("nome completo", max_length=150)
     email = models.EmailField("e-mail", unique=True)
+    biografia = models.TextField("biografia", blank=True)
+    foto = models.ImageField("foto", upload_to="fotos_perfil/", blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["nome_completo"]
