@@ -124,7 +124,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Arquivos enviados (fotos dos restaurantes)
+# Arquivos enviados pelos usuarios (fotos de perfil)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -139,6 +139,3 @@ MAILERS = {
 }
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
-LOGIN_URL = 'usuarios:login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'

@@ -239,6 +239,7 @@ class FrontendWireframeTests(TestCase):
         self.assertEqual(resposta.context["ocasioes_destaque"], [])
         self.assertNotContains(resposta, "Romântico")
         self.assertContains(resposta, "data-carousel")
+        self.assertContains(resposta, "Fotos do Restaurante")
 
     def test_historico_exibe_perfil_e_as_avaliacoes_anteriores(self):
         registrar_avaliacao(usuario=self.usuario, restaurante=self.restaurante, nota=1, comentario="Primeira visita")
