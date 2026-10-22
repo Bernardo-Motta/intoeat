@@ -1,11 +1,11 @@
 {% extends 'intoeat/base.html' %}
-{% block title %}Avaliar {{ restaurante.nome }} — IntoEat{% endblock %}
+{% block title %}{% if editando %}Editar avaliação de{% else %}Avaliar{% endif %} {{ restaurante.nome }} — IntoEat{% endblock %}
 {% block content %}
   <a class="back-link" href="{% url 'restaurantes:perfil' restaurante.pk %}"><span aria-hidden="true">←</span> Voltar ao restaurante</a>
   <section class="panel form-panel" aria-labelledby="form-title">
     <div class="form-intro">
       <span class="form-eyebrow">Compartilhe sua experiência</span>
-      <h1 id="form-title">Avaliar {{ restaurante.nome }}</h1>
+      <h1 id="form-title">{% if editando %}Editar avaliação de{% else %}Avaliar{% endif %} {{ restaurante.nome }}</h1>
       <p>A nota é obrigatória. Comentário e características são opcionais.</p>
     </div>
     <form method="post" class="review-form" novalidate>
@@ -40,7 +40,7 @@
       </fieldset>
       <div class="form-actions">
         <a class="secondary-button" href="{% url 'restaurantes:perfil' restaurante.pk %}">Cancelar</a>
-        <button class="primary-button" type="submit">Enviar avaliação <span aria-hidden="true">→</span></button>
+        <button class="primary-button" type="submit">{% if editando %}Salvar avaliação{% else %}Enviar avaliação{% endif %} <span aria-hidden="true">→</span></button>
       </div>
     </form>
   </section>

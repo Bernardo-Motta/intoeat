@@ -30,6 +30,8 @@ class Restaurante(models.Model):
     endereco = models.CharField(max_length=200)
     cidade = models.CharField(max_length=100, blank=True)
     descricao = models.TextField(blank=True)
+    horario_funcionamento = models.CharField("horário de funcionamento", max_length=200, blank=True)
+    telefone = models.CharField(max_length=20, blank=True)
     tipo_cozinha = models.CharField(max_length=80)
     cnpj = models.CharField(max_length=14, blank=True, db_index=True)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="restaurantes_criados")
@@ -44,3 +46,18 @@ class Restaurante(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class FotoRestaurante(models.Model):
+    restaurante = models.ForeignKey(Restaurante, on_delete=models.CASCADE, related_name="fotos")
+    imagem = models.ImageField(upload_to="restaurantes/fotos/")
+    legenda = models.CharField(max_length=120, blank=True)
+    ordem = models.PositiveSmallIntegerField(default=0, help_text="Define a ordem no carrossel (menor primeiro).")
+
+    class Meta:
+        ordering = ["ordem", "pk"]
+        verbose_name = "foto do restaurante"
+        verbose_name_plural = "fotos do restaurante"
+
+    def __str__(self):
+        return f"{self.restaurante} - foto {self.ordem}"

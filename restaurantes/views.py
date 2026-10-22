@@ -1,11 +1,11 @@
-from collections import Counter
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db.models import Avg, Count
 from django.shortcuts import get_object_or_404, redirect, render
-from avaliacoes.services import avaliacoes_mais_recentes
+from avaliacoes.services import avaliacao_do_usuario, avaliacoes_mais_recentes
 from .forms import RestauranteForm
-from .models import Restaurante
+from .models import Caracteristica, Ocasiao, Restaurante
 from .services import solicitar_restaurante
 
 
@@ -14,20 +14,42 @@ def lista_restaurantes(request):
     return render(request, "restaurantes/lista.html", {"restaurantes": restaurantes})
 
 
+AVALIACOES_POR_PAGINA = 5
+DESTAQUES_NO_PERFIL = 3
+
+
+def _mais_citados(modelo, avaliacoes):
+    """Itens (características/ocasiões) mais citados nas avaliações vigentes, contados no banco."""
+    itens = (
+        modelo.objects.filter(avaliacoes__in=avaliacoes.values("pk"))
+        .annotate(total=Count("avaliacoes"))
+        .order_by("-total", "nome")[:DESTAQUES_NO_PERFIL]
+    )
+    return [{"nome": item.nome, "total": item.total} for item in itens]
+
+
 def perfil_restaurante(request, restaurante_id):
-    restaurante = get_object_or_404(Restaurante.objects.aprovados(), pk=restaurante_id)
-    avaliacoes_qs = avaliacoes_mais_recentes(restaurante).select_related("usuario").prefetch_related("caracteristicas", "ocasioes").order_by("-data", "-pk")
-    resumo = avaliacoes_qs.aggregate(media=Avg("nota"), total=Count("id"))
-    avaliacoes = list(avaliacoes_qs)
+    restaurante = get_object_or_404(
+        Restaurante.objects.aprovados().prefetch_related("fotos"), pk=restaurante_id
+    )
     # O perfil coletivo considera apenas a avaliação mais recente de cada pessoa.
-    caracteristicas = Counter(tag.nome for avaliacao in avaliacoes for tag in avaliacao.caracteristicas.all())
-    ocasioes = Counter(ocasiao.nome for avaliacao in avaliacoes for ocasiao in avaliacao.ocasioes.all())
+    vigentes = avaliacoes_mais_recentes(restaurante)
+    resumo = vigentes.aggregate(media=Avg("nota"), total=Count("id"))
+
+    lista = (
+        vigentes.select_related("usuario")
+        .prefetch_related("caracteristicas")
+        .order_by("-data", "-pk")
+    )
+    pagina = Paginator(lista, AVALIACOES_POR_PAGINA).get_page(request.GET.get("pagina"))
+
     return render(request, "restaurantes/perfil.html", {
         "restaurante": restaurante,
-        "avaliacoes": avaliacoes,
+        "avaliacoes": pagina,
         "resumo": resumo,
-        "caracteristicas_destaque": [dict(nome=nome, total=total) for nome, total in caracteristicas.most_common(3)],
-        "ocasioes_destaque": [dict(nome=nome, total=total) for nome, total in ocasioes.most_common(3)],
+        "minha_avaliacao": avaliacao_do_usuario(request.user, restaurante),
+        "caracteristicas_destaque": _mais_citados(Caracteristica, vigentes),
+        "ocasioes_destaque": _mais_citados(Ocasiao, vigentes),
         "estrelas": range(1, 6),
     })
 

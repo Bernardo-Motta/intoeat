@@ -58,3 +58,15 @@ def avaliacoes_mais_recentes(restaurante=None):
     if restaurante is not None:
         avaliacoes = avaliacoes.filter(restaurante=restaurante)
     return avaliacoes
+
+
+def avaliacao_do_usuario(usuario, restaurante):
+    """Avaliação vigente (a mais recente) do usuário para o restaurante, ou None."""
+    if not getattr(usuario, "is_authenticated", False):
+        return None
+    return (
+        Avaliacao.objects.filter(usuario=usuario, restaurante=restaurante)
+        .prefetch_related("caracteristicas")
+        .order_by("-data", "-pk")
+        .first()
+    )

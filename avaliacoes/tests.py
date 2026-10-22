@@ -238,6 +238,7 @@ class FrontendWireframeTests(TestCase):
         self.assertEqual([item["nome"] for item in resposta.context["caracteristicas_destaque"]], ["Tranquilo"])
         self.assertEqual(resposta.context["ocasioes_destaque"], [])
         self.assertNotContains(resposta, "Romântico")
+        self.assertContains(resposta, "data-carousel")
         self.assertContains(resposta, "Fotos do Restaurante")
 
     def test_historico_exibe_perfil_e_as_avaliacoes_anteriores(self):
@@ -249,3 +250,52 @@ class FrontendWireframeTests(TestCase):
         self.assertContains(resposta, "Restaurantes Visitados")
         self.assertContains(resposta, "Primeira visita")
         self.assertContains(resposta, "Segunda visita")
+
+
+class EditarAvaliacaoTests(TestCase):
+    def setUp(self):
+        self.usuario = Usuario.objects.create_user(email="edita@example.com", password="senha123456", nome_completo="Edita")
+        self.restaurante = Restaurante.objects.create(
+            nome="Casa", endereco="Rua A", tipo_cozinha="Café", status=Restaurante.Status.APROVADO
+        )
+        self.url = reverse("avaliacoes:criar", args=[self.restaurante.pk])
+        self.perfil = reverse("restaurantes:perfil", args=[self.restaurante.pk])
+        self.client.force_login(self.usuario)
+
+    def test_primeira_avaliacao_abre_formulario_vazio(self):
+        resposta = self.client.get(self.url)
+        self.assertFalse(resposta.context["editando"])
+        self.assertEqual(resposta.context["form"].initial, {})
+        self.assertNotContains(resposta, "Editar avaliação de")
+
+    def test_formulario_abre_preenchido_com_a_avaliacao_anterior(self):
+        from restaurantes.models import Caracteristica
+        tag = Caracteristica.objects.get(nome="Tranquilo")
+        registrar_avaliacao(usuario=self.usuario, restaurante=self.restaurante, nota=3, comentario="Razoável", caracteristicas=[tag])
+        resposta = self.client.get(self.url)
+        self.assertTrue(resposta.context["editando"])
+        self.assertEqual(
+            resposta.context["form"].initial,
+            {"nota": 3, "comentario": "Razoável", "caracteristicas": [tag.pk]},
+        )
+        self.assertContains(resposta, "Editar avaliação de")
+        self.assertContains(resposta, "Razoável")
+
+    def test_editar_substitui_a_avaliacao_vigente_e_preserva_o_historico(self):
+        registrar_avaliacao(usuario=self.usuario, restaurante=self.restaurante, nota=2, comentario="Antes")
+        resposta = self.client.post(self.url, {"nota": "5", "comentario": "Depois"})
+        self.assertRedirects(resposta, self.perfil)
+        self.assertEqual(Avaliacao.objects.count(), 2)  # histórico mantido
+        perfil = self.client.get(self.perfil)
+        self.assertEqual(perfil.context["resumo"]["total"], 1)
+        self.assertEqual(perfil.context["resumo"]["media"], 5)
+        self.assertContains(perfil, "Depois")
+        self.assertNotContains(perfil, "Antes")
+        self.assertContains(perfil, "Editar avaliação")
+
+    def test_edicao_exige_login(self):
+        self.client.logout()
+        resposta = self.client.get(self.url)
+        self.assertEqual(resposta.status_code, 302)
+        self.assertIn("next=", resposta["Location"])
+

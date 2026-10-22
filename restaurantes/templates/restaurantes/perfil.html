@@ -1,19 +1,30 @@
 {% extends 'intoeat/base.html' %}
+{% load static %}
 {% block title %}{{ restaurante.nome }} — IntoEat{% endblock %}
 {% block content %}
   <a class="back-link" href="{% url 'restaurantes:lista' %}"><span aria-hidden="true">←</span> Voltar</a>
 
-  {# O modelo Restaurante ainda não possui fotos: mantemos os espaços do carrossel como no wireframe. #}
-  <section class="photo-strip" aria-label="Área reservada às fotos do restaurante">
-    <div class="photo-placeholder photo-cover"><span>Fotos do Restaurante<br><small>(Carrossel)</small></span></div>
-    <div class="photo-placeholder" aria-hidden="true"></div>
-    <div class="photo-placeholder" aria-hidden="true"></div>
-    <div class="photo-placeholder" aria-hidden="true"></div>
-    <div class="photo-placeholder" aria-hidden="true"></div>
-    <div class="photo-placeholder" aria-hidden="true"></div>
-    <div class="photo-placeholder" aria-hidden="true"></div>
-    <div class="photo-placeholder" aria-hidden="true"></div>
+  {% with fotos=restaurante.fotos.all %}
+  <section class="photo-carousel" data-carousel aria-label="Fotos do restaurante">
+    {% for foto in fotos %}
+      <figure data-slide{% if not forloop.first %} hidden{% endif %}>
+        <img src="{{ foto.imagem.url }}" alt="{{ foto.legenda|default:restaurante.nome }}" style="max-width:100%;height:auto">
+        {% if foto.legenda %}<figcaption>{{ foto.legenda }}</figcaption>{% endif %}
+      </figure>
+    {% empty %}
+      <figure data-slide>
+        <img src="{% static 'intoeat/img/sem-foto.svg' %}" alt="Este restaurante ainda não tem fotos" style="max-width:100%;height:auto">
+      </figure>
+    {% endfor %}
+    {% if fotos|length > 1 %}
+      <div class="carousel-controls">
+        <button type="button" data-carousel-prev aria-label="Foto anterior">‹ Anterior</button>
+        <span data-carousel-position aria-live="polite">1 / {{ fotos|length }}</span>
+        <button type="button" data-carousel-next aria-label="Próxima foto">Próxima ›</button>
+      </div>
+    {% endif %}
   </section>
+  {% endwith %}
 
   <section class="panel restaurant-identity" aria-labelledby="restaurant-name">
     <div class="restaurant-title-row">
@@ -27,6 +38,8 @@
     </div>
     <strong class="identity-subtitle">{{ restaurante.tipo_cozinha }}</strong>
     <p class="identity-address">{{ restaurante.endereco }}{% if restaurante.cidade %}, {{ restaurante.cidade }}{% endif %}</p>
+    <p class="identity-hours"><strong>Horário:</strong> {{ restaurante.horario_funcionamento|default:"Não informado" }}</p>
+    <p class="identity-phone"><strong>Telefone:</strong> {{ restaurante.telefone|default:"Não informado" }}</p>
   </section>
 
   <section class="panel about-panel" aria-labelledby="sobre-restaurante">
@@ -40,15 +53,21 @@
     </p>
   </section>
 
-  <div class="section-heading">
+  <div class="section-heading" id="avaliacoes">
     <div><h2>Avaliações</h2><p>Exibindo a avaliação mais recente de cada pessoa.</p></div>
-    <a class="primary-button" href="{% url 'avaliacoes:criar' restaurante.pk %}">★ Avaliar restaurante</a>
+    {% if not user.is_authenticated %}
+      <a class="primary-button" id="botao-avaliar" href="{% url 'usuarios:login' %}?next={{ request.path|urlencode }}">★ Avaliar restaurante</a>
+    {% elif minha_avaliacao %}
+      <a class="primary-button" id="botao-editar-avaliacao" href="{% url 'avaliacoes:criar' restaurante.pk %}">✎ Editar avaliação</a>
+    {% else %}
+      <a class="primary-button" id="botao-avaliar" href="{% url 'avaliacoes:criar' restaurante.pk %}">★ Avaliar restaurante</a>
+    {% endif %}
   </div>
   <section class="reviews-grid" aria-label="Avaliações recentes por usuário">
     {% for avaliacao in avaliacoes %}
       <article class="panel review-card">
         <div class="review-card-heading">
-          <h3>{{ avaliacao.usuario.nome_completo|default:avaliacao.usuario.email }}</h3>
+          <h3>{{ avaliacao.usuario.nome_completo|default:avaliacao.usuario.email }}{% if avaliacao.usuario_id == user.pk %} (você){% endif %}</h3>
           <div class="stars stars-small" aria-label="Nota {{ avaliacao.nota }} de 5">
             {% for estrela in estrelas %}<span class="{% if estrela <= avaliacao.nota %}filled{% endif %}" aria-hidden="true">{% if estrela <= avaliacao.nota %}★{% else %}☆{% endif %}</span>{% endfor %}
           </div>
@@ -68,4 +87,29 @@
       <div class="panel empty-state"><h3>Nenhuma avaliação por enquanto</h3><p>Compartilhe sua experiência e ajude outras pessoas a conhecer este restaurante.</p></div>
     {% endfor %}
   </section>
+  {% if avaliacoes.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Paginação das avaliações">
+    {% if avaliacoes.has_previous %}<a href="?pagina={{ avaliacoes.previous_page_number }}#avaliacoes" rel="prev">‹ Anterior</a>{% endif %}
+    <span>Página {{ avaliacoes.number }} de {{ avaliacoes.paginator.num_pages }}</span>
+    {% if avaliacoes.has_next %}<a href="?pagina={{ avaliacoes.next_page_number }}#avaliacoes" rel="next">Próxima ›</a>{% endif %}
+  </nav>
+  {% endif %}
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-carousel]').forEach(function (raiz) {
+        var slides = Array.prototype.slice.call(raiz.querySelectorAll('[data-slide]'));
+        if (slides.length < 2) { return; }
+        var posicao = raiz.querySelector('[data-carousel-position]');
+        var atual = 0;
+        function mostrar(indice) {
+          atual = (indice + slides.length) % slides.length;
+          slides.forEach(function (slide, i) { slide.hidden = (i !== atual); });
+          if (posicao) { posicao.textContent = (atual + 1) + ' / ' + slides.length; }
+        }
+        raiz.querySelector('[data-carousel-prev]').addEventListener('click', function () { mostrar(atual - 1); });
+        raiz.querySelector('[data-carousel-next]').addEventListener('click', function () { mostrar(atual + 1); });
+      });
+    })();
+  </script>
 {% endblock %}

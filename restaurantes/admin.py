@@ -1,13 +1,19 @@
 from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
-from .models import Ocasiao, Caracteristica, Restaurante
+from .models import Ocasiao, Caracteristica, FotoRestaurante, Restaurante
 from .services import aprovar_restaurante, rejeitar_restaurante
 
 admin.site.register(Ocasiao)
 admin.site.register(Caracteristica)
 
+class FotoRestauranteInline(admin.TabularInline):
+    model = FotoRestaurante
+    extra = 1
+
+
 @admin.register(Restaurante)
 class RestauranteAdmin(admin.ModelAdmin):
+    inlines = [FotoRestauranteInline]
     list_display = ("nome", "cnpj", "status", "criado_por")
     list_filter = ("status",)
     search_fields = ("nome", "cnpj")
