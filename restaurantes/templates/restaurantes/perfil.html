@@ -5,7 +5,7 @@
   <a class="back-link" href="{% url 'restaurantes:lista' %}"><span aria-hidden="true">←</span> Voltar</a>
 
   {% with fotos=restaurante.fotos.all %}
-  <section class="photo-carousel" data-carousel aria-label="Fotos do restaurante">
+  <section class="photo-carousel" data-carousel aria-label="Fotos do Restaurante">
     {% for foto in fotos %}
       <figure data-slide{% if not forloop.first %} hidden{% endif %}>
         <img src="{{ foto.imagem.url }}" alt="{{ foto.legenda|default:restaurante.nome }}" style="max-width:100%;height:auto">
