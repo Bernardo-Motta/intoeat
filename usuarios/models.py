@@ -23,6 +23,9 @@ class UsuarioManager(BaseUserManager):
         extra.setdefault("is_superuser", True)
         return self._criar(email, password, **extra)
 
+    def get_by_natural_key(self, email):
+        return self.get(email__iexact=email)
+
 
 class Usuario(AbstractUser):
     username = None
@@ -30,6 +33,8 @@ class Usuario(AbstractUser):
     last_name = None
     nome_completo = models.CharField("nome completo", max_length=150)
     email = models.EmailField("e-mail", unique=True)
+    biografia = models.TextField("biografia", blank=True)
+    foto = models.ImageField("foto", upload_to="fotos_perfil/", blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["nome_completo"]

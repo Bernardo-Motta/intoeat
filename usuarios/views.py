@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from .forms import CadastroForm
@@ -14,3 +15,9 @@ def cadastro(request):
     else:
         form = CadastroForm()
     return render(request, "usuarios/cadastro.html", {"form": form})
+
+
+@login_required
+def perfil(request):
+    """Mostra o perfil do usuario autenticado."""
+    return render(request, "usuarios/perfil.html", {"usuario": request.user})
