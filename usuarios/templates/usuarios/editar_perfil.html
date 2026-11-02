@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar perfil - InToEat</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f5f5f5; margin: 0; padding: 2rem 1rem; color: #222; }
+        .caixa { max-width: 520px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+        h1 { margin: 0 0 1.5rem; font-size: 1.5rem; }
+        .campo { margin-bottom: 1.25rem; }
+        .campo label { display: block; font-weight: 600; margin-bottom: .35rem; }
+        .campo input[type="text"], .campo input[type="email"], .campo textarea { width: 100%; box-sizing: border-box; padding: .55rem; border: 1px solid #bbb; border-radius: 6px; font: inherit; }
+        .erro { color: #b00020; margin: .35rem 0 0; font-size: .9rem; }
+        .mensagens { list-style: none; padding: 0; margin: 0 0 1.25rem; }
+        .mensagens li { padding: .7rem 1rem; border-radius: 8px; }
+        .mensagens .success { background: #e3f5e6; color: #1b5e20; }
+        .mensagens .error { background: #fdeaea; color: #b00020; }
+        .acoes { display: flex; gap: .75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .botao { padding: .6rem 1rem; border-radius: 8px; border: 1px solid #333; background: #fff; color: #222; text-decoration: none; font: inherit; cursor: pointer; }
+        .botao:hover { background: #eee; }
+        .botao-principal { background: #222; color: #fff; }
+        .botao-principal:hover { background: #444; }
+    </style>
+</head>
+<body>
+    <main class="caixa">
+        <h1>Editar perfil</h1>
+
+        {% if messages %}
+            <ul class="mensagens">
+                {% for mensagem in messages %}
+                    <li class="{{ mensagem.tags }}">{{ mensagem }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% for erro in form.non_field_errors %}
+                <p class="erro">{{ erro }}</p>
+            {% endfor %}
+
+            {% for campo in form %}
+                <div class="campo">
+                    {{ campo.label_tag }}
+                    {{ campo }}
+                    {% for erro in campo.errors %}
+                        <p class="erro">{{ erro }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="acoes">
+                <button type="submit" class="botao botao-principal">Salvar</button>
+                <a class="botao" href="{% url 'usuarios:perfil' %}">Cancelar</a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

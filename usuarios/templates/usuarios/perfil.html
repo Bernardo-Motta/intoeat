@@ -41,10 +41,16 @@
                 <p class="vazio">Você ainda não escreveu uma biografia.</p>
             {% endif %}
         </section>
-
+        {% if messages %}
+        <ul class="mensagens">
+            {% for mensagem in messages %}
+            <li>{{ mensagem }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         <nav class="acoes">
             {# TODO subtask 2: trocar "#" por {% url 'usuarios:editar_perfil' %} #}
-            <a class="botao" href="#">Editar perfil</a>
+            <a class="botao" href="{% url 'usuarios:editar_perfil' %}">Editar perfil</a>
             {# TODO subtask 3: trocar "#" por {% url 'usuarios:minhas_avaliacoes' %} #}
             <a class="botao" href="#">Minhas avaliações</a>
         </nav>
