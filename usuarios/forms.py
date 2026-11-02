@@ -1,7 +1,13 @@
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
+from PIL import Image, UnidentifiedImageError
 from django.contrib.auth.forms import UserCreationForm
 
 from .models import Usuario
+
+
+MAX_FOTO_BYTES = 5 * 1024 * 1024
+MAX_FOTO_DIMENSAO = 4096
 
 
 class PerfilForm(forms.ModelForm):
@@ -19,6 +25,28 @@ class PerfilForm(forms.ModelForm):
         widgets = {
             "biografia": forms.Textarea(attrs={"rows": 4}),
         }
+
+    def clean_foto(self):
+        foto = self.cleaned_data.get("foto")
+        # Uma foto existente pode permanecer sem novo upload.
+        if not isinstance(foto, UploadedFile):
+            return foto
+        if foto.size > MAX_FOTO_BYTES:
+            raise forms.ValidationError("A foto deve ter no máximo 5 MB.")
+        try:
+            foto.seek(0)
+            with Image.open(foto) as imagem:
+                largura, altura = imagem.size
+                formato = imagem.format
+            foto.seek(0)
+        except (UnidentifiedImageError, OSError, ValueError):
+            raise forms.ValidationError("Envie um arquivo de imagem válido.")
+
+        if formato not in ("PNG", "JPEG"):
+            raise forms.ValidationError("A foto deve estar no formato PNG ou JPEG.")
+        if largura > MAX_FOTO_DIMENSAO or altura > MAX_FOTO_DIMENSAO:
+            raise forms.ValidationError("A foto deve ter no máximo 4096 pixels em cada dimensão.")
+        return foto
 
     def clean_email(self):
         # O manager guarda e-mails em minusculas, e a restricao unique do banco
