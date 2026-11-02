@@ -23,6 +23,9 @@ class UsuarioManager(BaseUserManager):
         extra.setdefault("is_superuser", True)
         return self._criar(email, password, **extra)
 
+    def get_by_natural_key(self, email):
+        return self.get(email__iexact=email)
+
 
 class Usuario(AbstractUser):
     username = None

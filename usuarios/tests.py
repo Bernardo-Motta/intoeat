@@ -9,6 +9,7 @@ from PIL import Image
 
 from .models import Usuario
 
+SENHA = "SenhaForte#2026"
 MEDIA_TEMPORARIA = tempfile.mkdtemp()
 
 
@@ -17,6 +18,53 @@ def imagem_de_teste():
     buffer = BytesIO()
     Image.new("RGB", (10, 10), "red").save(buffer, format="PNG")
     return SimpleUploadedFile("foto.png", buffer.getvalue(), content_type="image/png")
+
+
+class CadastroLoginTests(TestCase):
+    def test_cadastro_cria_usuario_e_faz_login(self):
+        resposta = self.client.post(reverse("usuarios:cadastro"), {
+            "nome_completo": "Maria Silva",
+            "email": "maria@exemplo.com",
+            "password1": SENHA,
+            "password2": SENHA,
+        })
+        self.assertRedirects(resposta, reverse("home"))
+        self.assertTrue(Usuario.objects.filter(email="maria@exemplo.com").exists())
+
+    def test_email_duplicado_e_rejeitado(self):
+        Usuario.objects.create_user(
+            email="joao@exemplo.com", password=SENHA, nome_completo="Joao"
+        )
+        resposta = self.client.post(reverse("usuarios:cadastro"), {
+            "nome_completo": "Outro Joao",
+            "email": "JOAO@exemplo.com",
+            "password1": SENHA,
+            "password2": SENHA,
+        })
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(
+            Usuario.objects.filter(email__iexact="joao@exemplo.com").count(), 1
+        )
+
+    def test_login_com_email(self):
+        Usuario.objects.create_user(
+            email="ana@exemplo.com", password=SENHA, nome_completo="Ana"
+        )
+        resposta = self.client.post(reverse("usuarios:login"), {
+            "username": "ana@exemplo.com",
+            "password": SENHA,
+        })
+        self.assertRedirects(resposta, reverse("home"))
+
+    def test_login_com_email_em_maiusculas(self):
+        Usuario.objects.create_user(
+            email="ana@exemplo.com", password=SENHA, nome_completo="Ana"
+        )
+        resposta = self.client.post(reverse("usuarios:login"), {
+            "username": "ANA@Exemplo.com",
+            "password": SENHA,
+        })
+        self.assertRedirects(resposta, reverse("home"))
 
 
 @override_settings(MEDIA_ROOT=MEDIA_TEMPORARIA)
@@ -45,7 +93,7 @@ class PerfilViewTests(BaseUsuarioTests):
     def test_visitante_e_redirecionado_para_o_login(self):
         resposta = self.client.get(self.url)
         self.assertEqual(resposta.status_code, 302)
-        self.assertIn(reverse("admin:login"), resposta.url)
+        self.assertIn(reverse("usuarios:login"), resposta.url)
 
     def test_usuario_logado_ve_nome_login_e_biografia(self):
         self.client.force_login(self.usuario)
@@ -94,6 +142,7 @@ class PerfilViewTests(BaseUsuarioTests):
         resposta = self.client.get(self.url)
         self.assertContains(resposta, reverse("usuarios:editar_perfil"))
         self.assertContains(resposta, "Editar perfil")
+
         self.assertContains(resposta, "Minhas avaliações")
 
 
@@ -116,7 +165,7 @@ class EditarPerfilViewTests(BaseUsuarioTests):
     def test_visitante_e_redirecionado_para_o_login(self):
         resposta = self.client.get(self.url)
         self.assertEqual(resposta.status_code, 302)
-        self.assertIn(reverse("admin:login"), resposta.url)
+        self.assertIn(reverse("usuarios:login"), resposta.url)
 
     def test_visitante_nao_consegue_enviar_o_formulario(self):
         resposta = self.client.post(self.url, self.dados(nome_completo="Invasor"))
@@ -220,3 +269,4 @@ class EditarPerfilViewTests(BaseUsuarioTests):
         self.assertIn("foto", resposta.context["form"].errors)
         self.usuario.refresh_from_db()
         self.assertFalse(self.usuario.foto)
+
