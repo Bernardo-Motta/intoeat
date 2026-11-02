@@ -14,6 +14,9 @@ class Avaliacao(models.Model):
 
     class Meta:
         ordering = ["-data"]
+        indexes = [
+            models.Index(fields=["restaurante", "usuario", "-data", "-id"], name="avaliacao_vigente_idx"),
+        ]
         constraints = [models.CheckConstraint(condition=models.Q(nota__gte=0, nota__lte=5), name="avaliacao_nota_entre_0_e_5")]
 
     def __str__(self):

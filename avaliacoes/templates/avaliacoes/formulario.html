@@ -38,6 +38,16 @@
         </div>
         {% if form.caracteristicas.errors %}<div class="field-error" role="alert">{{ form.caracteristicas.errors }}</div>{% endif %}
       </fieldset>
+      <fieldset class="form-group">
+        <legend>Ocasiões recomendadas <span class="optional-note">(opcional)</span></legend>
+        <p class="field-hint">Para quais ocasiões este restaurante combina? Selecione nenhuma ou várias.</p>
+        <div class="tag-options">
+          {% for escolha in form.ocasioes %}
+            <label class="tag-option">{{ escolha.tag }}<span>{{ escolha.choice_label }}</span></label>
+          {% empty %}<p class="muted">Não existem ocasiões cadastradas.</p>{% endfor %}
+        </div>
+        {% if form.ocasioes.errors %}<div class="field-error" role="alert">{{ form.ocasioes.errors }}</div>{% endif %}
+      </fieldset>
       <div class="form-actions">
         <a class="secondary-button" href="{% url 'restaurantes:perfil' restaurante.pk %}">Cancelar</a>
         <button class="primary-button" type="submit">{% if editando %}Salvar avaliação{% else %}Enviar avaliação{% endif %} <span aria-hidden="true">→</span></button>

@@ -276,7 +276,7 @@ class EditarAvaliacaoTests(TestCase):
         self.assertTrue(resposta.context["editando"])
         self.assertEqual(
             resposta.context["form"].initial,
-            {"nota": 3, "comentario": "Razoável", "caracteristicas": [tag.pk]},
+            {"nota": 3, "comentario": "Razoável", "caracteristicas": [2], "ocasioes": [],},
         )
         self.assertContains(resposta, "Editar avaliação de")
         self.assertContains(resposta, "Razoável")

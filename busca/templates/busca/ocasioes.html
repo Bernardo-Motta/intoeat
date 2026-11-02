@@ -1,0 +1,14 @@
+{% extends 'intoeat/base.html' %}
+{% block title %}Explorar ocasiões — IntoEat{% endblock %}
+{% block content %}
+<section class="panel discover-panel">
+  <h1>Restaurantes por ocasião</h1>
+  <p>Veja os locais associados a cada contexto pelos próprios usuários.</p>
+  <div class="discover-categories">
+    {% for ocasiao in ocasioes %}
+      <a class="discover-category" href="{% url 'busca:resultado_ocasiao' ocasiao.pk %}">{{ ocasiao.nome }} <span aria-hidden="true">→</span></a>
+    {% empty %}<p class="muted">Ainda não existem ocasiões cadastradas.</p>{% endfor %}
+  </div>
+  <a class="secondary-button" href="{% url 'busca:filtros' %}">Buscar com filtros</a>
+</section>
+{% endblock %}

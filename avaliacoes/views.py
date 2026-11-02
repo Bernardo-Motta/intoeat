@@ -17,6 +17,7 @@ def criar_avaliacao(request, restaurante_id):
             "nota": anterior.nota,
             "comentario": anterior.comentario,
             "caracteristicas": [tag.pk for tag in anterior.caracteristicas.all()],
+            "ocasioes": [o.pk for o in anterior.ocasioes.all()],
         }
     form = AvaliacaoForm(request.POST or None, initial=inicial)
     if request.method == "POST" and form.is_valid():

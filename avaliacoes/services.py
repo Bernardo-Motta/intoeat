@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import OuterRef, Subquery
-from restaurantes.models import Caracteristica, Restaurante
+from restaurantes.models import Caracteristica, Ocasiao, Restaurante
 from .models import Avaliacao
 
 
@@ -10,7 +10,7 @@ def restaurante_pode_receber_avaliacao(restaurante):
 
 
 @transaction.atomic
-def registrar_avaliacao(*, usuario, restaurante, nota, comentario="", caracteristicas=None):
+def registrar_avaliacao(*, usuario, restaurante, nota, comentario="", caracteristicas=None, ocasioes=None):
     if not getattr(usuario, "is_authenticated", False):
         raise ValidationError("Faça login para avaliar um restaurante.")
     if not Restaurante.objects.aprovados().filter(pk=restaurante.pk).exists():
@@ -31,6 +31,13 @@ def registrar_avaliacao(*, usuario, restaurante, nota, comentario="", caracteris
     if Caracteristica.objects.filter(pk__in=ids).count() != len(ids):
         raise ValidationError("Selecione apenas tags cadastradas.")
 
+    escolhidas = list(ocasioes) if ocasioes is not None else []
+    if any(not isinstance(o, Ocasiao) or o.pk is None for o in escolhidas):
+        raise ValidationError("Selecione apenas ocasiões cadastradas.")
+    ids_ocasioes = {o.pk for o in escolhidas}
+    if Ocasiao.objects.filter(pk__in=ids_ocasioes).count() != len(ids_ocasioes):
+        raise ValidationError("Selecione apenas ocasiões cadastradas.")
+
     avaliacao = Avaliacao(
         usuario=usuario,
         restaurante=restaurante,
@@ -41,6 +48,8 @@ def registrar_avaliacao(*, usuario, restaurante, nota, comentario="", caracteris
     avaliacao.save()
     if tags:
         avaliacao.caracteristicas.set(tags)
+    if escolhidas:
+        avaliacao.ocasioes.set(escolhidas)
     return avaliacao
 
 
