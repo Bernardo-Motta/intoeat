@@ -1,5 +1,5 @@
 from django import forms
-from restaurantes.models import Caracteristica
+from restaurantes.models import Caracteristica, Ocasiao
 from .models import Avaliacao
 
 
@@ -19,9 +19,16 @@ class AvaliacaoForm(forms.ModelForm):
         required=False,
     )
 
+    ocasioes = forms.ModelMultipleChoiceField(
+        label="Ocasiões recomendadas (opcional)",
+        queryset=Ocasiao.objects.order_by("nome"),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
     class Meta:
         model = Avaliacao
-        fields = ["nota", "comentario", "caracteristicas"]
+        fields = ["nota", "comentario", "caracteristicas", "ocasioes"]
         widgets = {
             "comentario": forms.Textarea(attrs={
                 "rows": 4, "placeholder": "Conte como foi sua experiência (opcional)",

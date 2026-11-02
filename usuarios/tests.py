@@ -1,4 +1,3 @@
-import shutil
 import tempfile
 from io import BytesIO
 
@@ -10,7 +9,6 @@ from PIL import Image
 from .models import Usuario
 
 SENHA = "SenhaForte#2026"
-MEDIA_TEMPORARIA = tempfile.mkdtemp()
 
 
 def imagem_de_teste():
@@ -67,14 +65,17 @@ class CadastroLoginTests(TestCase):
         self.assertRedirects(resposta, reverse("home"))
 
 
-@override_settings(MEDIA_ROOT=MEDIA_TEMPORARIA)
 class BaseUsuarioTests(TestCase):
     """Base comum: media em pasta temporaria e um usuario (Ana) pronto."""
 
     @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        shutil.rmtree(MEDIA_TEMPORARIA, ignore_errors=True)
+    def setUpClass(cls):
+        super().setUpClass()
+        temporaria = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(temporaria.cleanup)
+        configuracao = override_settings(MEDIA_ROOT=temporaria.name)
+        configuracao.enable()
+        cls.addClassCleanup(configuracao.disable)
 
     def setUp(self):
         self.usuario = Usuario.objects.create_user(
@@ -144,6 +145,7 @@ class PerfilViewTests(BaseUsuarioTests):
         self.assertContains(resposta, "Editar perfil")
 
         self.assertContains(resposta, "Minhas avaliações")
+        self.assertContains(resposta, reverse("avaliacoes:minhas"))
 
 
 class EditarPerfilViewTests(BaseUsuarioTests):
@@ -270,3 +272,37 @@ class EditarPerfilViewTests(BaseUsuarioTests):
         self.usuario.refresh_from_db()
         self.assertFalse(self.usuario.foto)
 
+
+
+class FotoPerfilLimitesTests(BaseUsuarioTests):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse("usuarios:editar_perfil")
+        self.dados = {"nome_completo": "Ana Souza", "email": self.usuario.email, "biografia": "Bio"}
+        self.client.force_login(self.usuario)
+
+    def test_foto_maior_que_5_mb_rejeitada(self):
+        # Usa uma imagem pequena válida acrescida de bytes, para testar o limite de upload.
+        foto = imagem_de_teste()
+        grande = SimpleUploadedFile("grande.png", foto.read() + b"x" * (5 * 1024 * 1024 + 1), content_type="image/png")
+        resposta = self.client.post(self.url, {**self.dados, "foto": grande})
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("foto", resposta.context["form"].errors)
+        self.usuario.refresh_from_db()
+        self.assertFalse(self.usuario.foto)
+
+    def test_dimensoes_maiores_que_4096_rejeitadas(self):
+        buffer = BytesIO()
+        Image.new("RGB", (4097, 10), "red").save(buffer, format="PNG")
+        foto = SimpleUploadedFile("grande.png", buffer.getvalue(), content_type="image/png")
+        resposta = self.client.post(self.url, {**self.dados, "foto": foto})
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn("foto", resposta.context["form"].errors)
+
+    def test_substituir_foto(self):
+        self.client.post(self.url, {**self.dados, "foto": imagem_de_teste()})
+        self.usuario.refresh_from_db()
+        foto_anterior = self.usuario.foto.name
+        self.client.post(self.url, {**self.dados, "foto": imagem_de_teste()})
+        self.usuario.refresh_from_db()
+        self.assertNotEqual(foto_anterior, self.usuario.foto.name)

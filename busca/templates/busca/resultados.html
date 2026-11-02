@@ -1,0 +1,46 @@
+{% extends 'intoeat/base.html' %}
+{% block title %}{{ titulo }} — IntoEat{% endblock %}
+{% block content %}
+  <section class="panel discover-panel">
+    <h1>{{ titulo }}</h1>
+    <nav class="discover-nav" aria-label="Formas de descobrir restaurantes">
+      <a href="{% url 'busca:filtros' %}">Buscar com filtros</a>
+      <a href="{% url 'busca:intencoes' %}">Quero um lugar para...</a>
+      <a href="{% url 'busca:ocasioes' %}">Explorar por ocasião</a>
+    </nav>
+    {% if form %}
+      <form method="get" class="discover-form">
+        <label for="{{ form.q.id_for_label }}">{{ form.q.label }}</label>
+        {{ form.q }}
+        <fieldset><legend>Ocasiões (opcional)</legend>
+          {% for item in form.ocasioes %}<label class="discover-checkbox">{{ item.tag }} {{ item.choice_label }}</label>{% empty %}<p>Não há ocasiões cadastradas.</p>{% endfor %}
+        </fieldset>
+        <fieldset><legend>Características (opcional)</legend>
+          {% for item in form.caracteristicas %}<label class="discover-checkbox">{{ item.tag }} {{ item.choice_label }}</label>{% empty %}<p>Não há características cadastradas.</p>{% endfor %}
+        </fieldset>
+        {% if form.errors %}<div role="alert" class="field-error">{{ form.errors }}</div>{% endif %}
+        <div class="form-actions"><button type="submit" class="primary-button">Buscar restaurantes</button></div>
+      </form>
+    {% endif %}
+    {% if aviso %}<p class="muted">{{ aviso }}</p>{% endif %}
+    <p class="muted">{{ total }} restaurante(s) encontrado(s). {% if com_filtros %}Ranking por compatibilidade com as escolhas; nota média como desempate.{% else %}Ordenação por nota média.{% endif %}</p>
+    <div class="discover-results">
+    {% for resultado in resultados %}
+      <article class="discover-result">
+        <h2><a href="{% url 'restaurantes:perfil' resultado.restaurante.pk %}">{{ resultado.restaurante.nome }}</a></h2>
+        <p>{{ resultado.restaurante.tipo_cozinha }}{% if resultado.restaurante.cidade %} · {{ resultado.restaurante.cidade }}{% endif %}</p>
+        <p>Nota: {% if resultado.nota_media is not None %}{{ resultado.nota_media|floatformat:1 }}/5{% else %}Ainda sem avaliações{% endif %} · {{ resultado.total_avaliacoes }} usuário(s)</p>
+        {% if com_filtros %}<p><strong>Compatibilidade: {{ resultado.compatibilidade|floatformat:1 }}%</strong></p>{% endif %}
+        <p class="muted">{% if resultado.percentual_ocasioes is not None %}Ocasiões: {{ resultado.percentual_ocasioes|floatformat:1 }}%{% endif %}
+          {% if resultado.percentual_caracteristicas is not None %} · Características: {{ resultado.percentual_caracteristicas|floatformat:1 }}%{% endif %}</p>
+        <a class="secondary-button" href="{% url 'restaurantes:perfil' resultado.restaurante.pk %}">Ver restaurante</a>
+      </article>
+    {% empty %}<div class="empty-state"><h2>Nenhum restaurante encontrado</h2><p>Tente mudar o nome, tipo de cozinha ou seleções.</p></div>{% endfor %}
+    </div>
+    {% if resultados.has_other_pages %}<nav class="discover-pages" aria-label="Paginação">
+      {% if resultados.has_previous %}<a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}pagina={{ resultados.previous_page_number }}">Anterior</a>{% endif %}
+      <span>Página {{ resultados.number }} de {{ resultados.paginator.num_pages }}</span>
+      {% if resultados.has_next %}<a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}pagina={{ resultados.next_page_number }}">Próxima</a>{% endif %}
+    </nav>{% endif %}
+  </section>
+{% endblock %}

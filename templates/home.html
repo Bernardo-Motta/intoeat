@@ -2,4 +2,7 @@
 {% block conteudo %}
   <h1>Into Eat</h1>
   <p>Encontre o restaurante certo para cada ocasião.</p>
+  <p><a href="{% url 'busca:filtros' %}">Buscar restaurantes</a> ·
+     <a href="{% url 'busca:intencoes' %}">Quero um lugar para...</a> ·
+     <a href="{% url 'busca:ocasioes' %}">Explorar por ocasião</a></p>
 {% endblock %}

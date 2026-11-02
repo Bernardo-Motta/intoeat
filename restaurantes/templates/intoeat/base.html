@@ -18,6 +18,9 @@
         <span>IntoEat</span>
       </a>
       <nav class="header-nav" aria-label="Links rápidos">
+        <a href="{% url 'busca:filtros' %}" title="Buscar restaurantes" aria-label="Buscar restaurantes">🔎</a>
+        <a href="{% url 'busca:intencoes' %}" title="Busca por intenção" aria-label="Quero um lugar para...">✨</a>
+        <a href="{% url 'busca:ocasioes' %}" title="Navegar por ocasião" aria-label="Navegar por ocasião">▦</a>
         <a href="{% url 'restaurantes:lista' %}" title="Restaurantes" aria-label="Restaurantes">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
         </a>

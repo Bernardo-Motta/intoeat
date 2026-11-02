@@ -1,0 +1,14 @@
+{% extends 'intoeat/base.html' %}
+{% block title %}O que você procura? — IntoEat{% endblock %}
+{% block content %}
+<section class="panel discover-panel">
+  <h1>Quero um lugar para...</h1>
+  <p>Escolha uma intenção para receber restaurantes relacionados à ocasião.</p>
+  <div class="discover-categories">
+    {% for slug, titulo in intencoes %}
+      <a class="discover-category" href="{% url 'busca:resultado_intencao' slug %}">{{ titulo }} <span aria-hidden="true">→</span></a>
+    {% endfor %}
+  </div>
+  <a class="secondary-button" href="{% url 'busca:filtros' %}">Busca avançada</a>
+</section>
+{% endblock %}
